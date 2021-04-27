@@ -4,16 +4,29 @@ import numpy as np
 from sqlalchemy import create_engine
 
 def load_data(messages_filepath, categories_filepath):
-    # load messages dataset
+    """
+    Load datasets
+    input:
+         messages_filepath,
+         categories_filepath
+    output:
+        df: merged datasets
+    """
     messages = pd.read_csv(messages_filepath)
     categories = pd.read_csv(categories_filepath)
-
-    # merge datasets
     df = messages.merge(categories, on =['id'])
     
     return df
     
 def clean_data(df):
+    """
+    Clean_data
+    Create a dataframe of the 36 individual category columns
+    input:
+         df: merged dataframe
+    output:
+        df: cleaned dataframe
+    """
     # create a dataframe of the 36 individual category columns
     categories = df['categories'].str.split(';', expand = True)
     
@@ -35,6 +48,8 @@ def clean_data(df):
     
         # convert column from string to numeric
         categories[column] = categories[column].astype(int)
+    # replace categories larger 1 with 1
+    categories.where(categories <= 1, 1, inplace=True)
     # drop the original categories column from `df`
     df.drop('categories', axis = 1, inplace = True)
     
@@ -47,6 +62,15 @@ def clean_data(df):
     return df
     
 def save_data(df, database_filepath):
+    """
+    Clean_data
+    Create a dataframe of the 36 individual category columns
+    input:
+         df: cleaned dataframe
+         database_filepath
+    output:
+        df: cleaned dataframe
+    """
     engine = create_engine('sqlite:///' + database_filepath)
     df.to_sql('messages_disaster', engine, index=False, if_exists='replace')
 
